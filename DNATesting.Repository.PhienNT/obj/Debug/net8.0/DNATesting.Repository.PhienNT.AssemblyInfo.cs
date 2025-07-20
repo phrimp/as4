@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DNATesting.Repository.PhienNT")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+690ada97ec7610e9fdef40a29c7598e1cebc6241")]
 [assembly: System.Reflection.AssemblyProductAttribute("DNATesting.Repository.PhienNT")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DNATesting.Repository.PhienNT")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

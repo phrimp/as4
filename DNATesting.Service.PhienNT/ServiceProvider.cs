@@ -7,16 +7,20 @@ using System.Threading.Tasks;
 
 namespace DNATesting.Service.PhienNT
 {
-    public interface IServiceProvider
+    public interface IServiceProviders
     {
         SystemUserAccountService UserAccountService { get; }
         DnaTestsPhienNtService DnaTestsPhienNtService { get; }
+        LociPhienNtService LociPhienNtService { get; }
     }
 
-    public class ServiceProvider : IServiceProvider
+    public class ServiceProviders : IServiceProviders
     {
         SystemUserAccountService _userAccountService;
         DnaTestsPhienNtService _dnaTestsPhienNtService;
+        LociPhienNtService _lociPhienNtService;
+
+        public ServiceProviders() { }
 
         public SystemUserAccountService UserAccountService
         {
@@ -26,6 +30,11 @@ namespace DNATesting.Service.PhienNT
         public DnaTestsPhienNtService DnaTestsPhienNtService
         {
             get { return _dnaTestsPhienNtService ??= new DnaTestsPhienNtService(); }
+        }
+
+        public LociPhienNtService LociPhienNtService
+        {
+            get { return _lociPhienNtService ??= new LociPhienNtService(); }
         }
     }
 }

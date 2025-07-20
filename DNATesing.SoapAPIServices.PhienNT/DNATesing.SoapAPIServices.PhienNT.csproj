@@ -16,4 +16,8 @@
     <Folder Include="SoapModels\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DNATesting.Service.PhienNT\DNATesting.Service.PhienNT.csproj" />
+  </ItemGroup>
+
 </Project>
