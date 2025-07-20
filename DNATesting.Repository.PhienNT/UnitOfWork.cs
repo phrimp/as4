@@ -1,4 +1,5 @@
 ﻿using DNATesting.Repository.PhienNT.DBContext;
+using DNATesting.Repository.PhienNT.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace DNATesting.Repository.PhienNT
         DnaTestsPhienNtRepository DnaTestsPhienNtRepository { get; }
         LociPhienNtRepository LociPhienNtRepository { get; }
         AlleleResultsPhienNtRepository AlleleResultsPhienNtRepository { get; }
-        LocusMatchResultsPhienNtRepository LocusMatchResultsPhienNtRepository{ get; }
+        LocusMatchResultsPhienNtRepository LocusMatchResultsPhienNtRepository { get; }
 
         int SaveChangesWithTransaction();
         Task<int> SaveChangesWithTransactionAsync();
@@ -42,7 +43,7 @@ namespace DNATesting.Repository.PhienNT
 
         public LociPhienNtRepository LociPhienNtRepository
         {
-            get { return _lociPhienNtRepository ??= new LociPhienNtRepository(_context);  }
+            get { return _lociPhienNtRepository ??= new LociPhienNtRepository(_context); }
         }
 
         public AlleleResultsPhienNtRepository AlleleResultsPhienNtRepository
@@ -50,7 +51,10 @@ namespace DNATesting.Repository.PhienNT
             get { return _alleleResultsPhienNtRepository ??= new AlleleResultsPhienNtRepository(_context); }
         }
 
-        public LocusMatchResultsPhienNtRepository LocusMatchResultsPhienNtRepository => throw new NotImplementedException();
+        public LocusMatchResultsPhienNtRepository LocusMatchResultsPhienNtRepository
+        {
+            get { return _locusMatchResultsPhienNtRepository ??= new LocusMatchResultsPhienNtRepository(_context); }
+        }
 
         public void Dispose()
         {
@@ -69,7 +73,7 @@ namespace DNATesting.Repository.PhienNT
                     dbContextTransaction.Commit();
                 }
                 catch (Exception)
-                {                  
+                {
                     result = -1;
                     dbContextTransaction.Rollback();
                 }
@@ -91,7 +95,6 @@ namespace DNATesting.Repository.PhienNT
                 }
                 catch (Exception)
                 {
-                    //Log Exception Handling message                      
                     result = -1;
                     dbContextTransaction.Rollback();
                 }

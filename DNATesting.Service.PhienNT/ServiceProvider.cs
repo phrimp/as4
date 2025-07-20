@@ -12,13 +12,15 @@ namespace DNATesting.Service.PhienNT
         SystemUserAccountService UserAccountService { get; }
         DnaTestsPhienNtService DnaTestsPhienNtService { get; }
         LociPhienNtService LociPhienNtService { get; }
+        AlleleResultsPhienNtService AlleleResultsPhienNtService { get; }
     }
 
     public class ServiceProviders : IServiceProviders
     {
-        SystemUserAccountService _userAccountService;
-        DnaTestsPhienNtService _dnaTestsPhienNtService;
-        LociPhienNtService _lociPhienNtService;
+        private SystemUserAccountService _userAccountService;
+        private DnaTestsPhienNtService _dnaTestsPhienNtService;
+        private LociPhienNtService _lociPhienNtService;
+        private AlleleResultsPhienNtService _alleleResultsPhienNtService;
 
         public ServiceProviders() { }
 
@@ -35,6 +37,11 @@ namespace DNATesting.Service.PhienNT
         public LociPhienNtService LociPhienNtService
         {
             get { return _lociPhienNtService ??= new LociPhienNtService(); }
+        }
+
+        public AlleleResultsPhienNtService AlleleResultsPhienNtService
+        {
+            get { return _alleleResultsPhienNtService ??= new AlleleResultsPhienNtService(); }
         }
     }
 }

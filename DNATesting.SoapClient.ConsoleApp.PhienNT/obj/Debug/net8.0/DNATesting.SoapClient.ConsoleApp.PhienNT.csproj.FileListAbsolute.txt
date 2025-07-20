@@ -1,0 +1,15 @@
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\bin\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.exe
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\bin\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.deps.json
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\bin\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.runtimeconfig.json
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\bin\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.dll
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\bin\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.pdb
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.GeneratedMSBuildEditorConfig.editorconfig
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.AssemblyInfoInputs.cache
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.AssemblyInfo.cs
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.csproj.CoreCompileInputs.cache
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.sourcelink.json
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.dll
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\refint\DNATesting.SoapClient.ConsoleApp.PhienNT.dll
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.pdb
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\DNATesting.SoapClient.ConsoleApp.PhienNT.genruntimeconfig.cache
+E:\Work\SU25_PRN232_SE1730_ASM4_SE182962_PhienNT\DNATesting.SoapClient.ConsoleApp.PhienNT\obj\Debug\net8.0\ref\DNATesting.SoapClient.ConsoleApp.PhienNT.dll

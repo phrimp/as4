@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "DNATesing.SoapAPIServices.PhienNT\\DNATesing.SoapAPIServices.PhienNT.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "DNATesting.SoapClient.ConsoleApp.PhienNT\\DNATesting.SoapClient.ConsoleApp.PhienNT.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
