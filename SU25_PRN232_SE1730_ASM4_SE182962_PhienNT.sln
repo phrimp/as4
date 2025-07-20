@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35828.75 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNATesting.Repository.PhienNT", "DNATesting.Repository.PhienNT\DNATesting.Repository.PhienNT.csproj", "{37E0B298-3AF0-F779-389A-789FA6D9A40C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNATesting.Service.PhienNT", "DNATesting.Service.PhienNT\DNATesting.Service.PhienNT.csproj", "{01E9DE8D-F55F-659B-353F-8D56BD038C20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNATesing.SoapAPIServices.PhienNT", "DNATesing.SoapAPIServices.PhienNT\DNATesing.SoapAPIServices.PhienNT.csproj", "{2DF1E06C-3414-4EA8-AAEA-871D31343D85}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{37E0B298-3AF0-F779-389A-789FA6D9A40C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37E0B298-3AF0-F779-389A-789FA6D9A40C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37E0B298-3AF0-F779-389A-789FA6D9A40C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37E0B298-3AF0-F779-389A-789FA6D9A40C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01E9DE8D-F55F-659B-353F-8D56BD038C20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01E9DE8D-F55F-659B-353F-8D56BD038C20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01E9DE8D-F55F-659B-353F-8D56BD038C20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01E9DE8D-F55F-659B-353F-8D56BD038C20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DF1E06C-3414-4EA8-AAEA-871D31343D85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DF1E06C-3414-4EA8-AAEA-871D31343D85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DF1E06C-3414-4EA8-AAEA-871D31343D85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DF1E06C-3414-4EA8-AAEA-871D31343D85}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23B362B9-2B79-4381-9478-06D97044F17F}
+	EndGlobalSection
+EndGlobal

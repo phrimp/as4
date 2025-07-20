@@ -1,0 +1,6 @@
+@DNATesing.SoapAPIServices.PhienNT_HostAddress = http://localhost:5202
+
+GET {{DNATesing.SoapAPIServices.PhienNT_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\DNATesing.SoapAPIServices.PhienNT.props" />
+</Project>
