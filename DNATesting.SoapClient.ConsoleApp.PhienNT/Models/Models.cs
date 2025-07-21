@@ -1,64 +1,117 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DNATesting.SoapClient.ConsoleApp.PhienNT.Models
 {
     // Data Models
-    [DataContract]
+    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/DNATesting.SoapAPIServices.PhienNT.SoapModels")]
     public class DnaTestsPhienNt
     {
-        [DataMember] public int PhienNtid { get; set; }
-        [DataMember] public string TestType { get; set; } = "";
-        [DataMember] public string? Conclusion { get; set; }
-        [DataMember] public decimal? ProbabilityOfRelationship { get; set; }
-        [DataMember] public decimal? RelationshipIndex { get; set; }
-        [DataMember] public bool? IsCompleted { get; set; }
-        [DataMember] public DateTime? CreatedAt { get; set; }
+        [DataMember(Name = "PhienNtid")]
+        public int PhienNtid { get; set; }
+
+        [DataMember(Name = "TestType")]
+        public string? TestType { get; set; }
+
+        [DataMember(Name = "Conclusion")]
+        public string? Conclusion { get; set; }
+
+        [DataMember(Name = "ProbabilityOfRelationship")]
+        public decimal? ProbabilityOfRelationship { get; set; }
+
+        [DataMember(Name = "RelationshipIndex")]
+        public decimal? RelationshipIndex { get; set; }
+
+        [DataMember(Name = "IsCompleted")]
+        public bool? IsCompleted { get; set; }
+
+        [DataMember(Name = "CreatedAt")]
+        public DateTime? CreatedAt { get; set; }
 
         public override string ToString()
         {
-            return $"ID: {PhienNtid}, Type: {TestType}, Probability: {ProbabilityOfRelationship:F2}%, Completed: {IsCompleted}";
+            var probability = ProbabilityOfRelationship?.ToString("F2") ?? "N/A";
+            return $"ID: {PhienNtid}, Type: {TestType ?? "N/A"}, Probability: {probability}%, Completed: {IsCompleted?.ToString() ?? "N/A"}";
         }
     }
 
-    [DataContract]
+    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/DNATesting.SoapAPIServices.PhienNT.SoapModels")]
     public class LociPhienNt
     {
-        [DataMember] public int PhienNtid { get; set; }
-        [DataMember] public string Name { get; set; } = "";
-        [DataMember] public bool? IsCodis { get; set; }
-        [DataMember] public string? Description { get; set; }
-        [DataMember] public decimal? MutationRate { get; set; }
-        [DataMember] public DateTime? CreatedAt { get; set; }
+        [DataMember(Name = "PhienNtid")]
+        public int PhienNtid { get; set; }
+
+        [DataMember(Name = "Name")]
+        public string? Name { get; set; }
+
+        [DataMember(Name = "IsCodis")]
+        public bool? IsCodis { get; set; }
+
+        [DataMember(Name = "Description")]
+        public string? Description { get; set; }
+
+        [DataMember(Name = "MutationRate")]
+        public decimal? MutationRate { get; set; }
+
+        [DataMember(Name = "CreatedAt")]
+        public DateTime? CreatedAt { get; set; }
 
         public override string ToString()
         {
-            return $"ID: {PhienNtid}, Name: {Name}, CODIS: {IsCodis}, Rate: {MutationRate:F4}";
+            var rate = MutationRate?.ToString("F4") ?? "N/A";
+            return $"ID: {PhienNtid}, Name: {Name ?? "N/A"}, CODIS: {IsCodis?.ToString() ?? "N/A"}, Rate: {rate}";
         }
     }
 
-    // Service Contracts
-    [ServiceContract]
-    public interface IDnaTestsService
+    // Service Contracts - matching WSDL exactly
+    [ServiceContract(Namespace = "http://tempuri.org/")]
+    public interface IDnaTestsPhienNtSoapService
     {
-        [OperationContract] Task<List<DnaTestsPhienNt>> GetDnaTests();
-        [OperationContract] Task<DnaTestsPhienNt?> GetDnaTestById(int id);
-        [OperationContract] Task<DnaTestsPhienNt> CreateDnaTest(DnaTestsPhienNt test);
-        [OperationContract] Task<bool> DeleteDnaTest(int id);
+        [OperationContract(Action = "http://tempuri.org/IDnaTestsPhienNtSoapService/GetDnaTests")]
+        DnaTestsPhienNt[] GetDnaTests();
+
+        [OperationContract(Action = "http://tempuri.org/IDnaTestsPhienNtSoapService/GetDnaTestById")]
+        DnaTestsPhienNt GetDnaTestById(int id);
+
+        [OperationContract(Action = "http://tempuri.org/IDnaTestsPhienNtSoapService/CreateDnaTest")]
+        DnaTestsPhienNt CreateDnaTest(DnaTestsPhienNt dnaTest);
+
+        [OperationContract(Action = "http://tempuri.org/IDnaTestsPhienNtSoapService/UpdateDnaTest")]
+        DnaTestsPhienNt UpdateDnaTest(int id, DnaTestsPhienNt dnaTest);
+
+        [OperationContract(Action = "http://tempuri.org/IDnaTestsPhienNtSoapService/DeleteDnaTest")]
+        bool DeleteDnaTest(int id);
+
+        [OperationContract(Action = "http://tempuri.org/IDnaTestsPhienNtSoapService/SearchDnaTests")]
+        DnaTestsPhienNt[] SearchDnaTests(string testType, bool isCompleted);
     }
 
-    [ServiceContract]
-    public interface ILociService
+    [ServiceContract(Namespace = "http://tempuri.org/")]
+    public interface ILociPhienNtSoapService
     {
-        [OperationContract] Task<List<LociPhienNt>> GetLoci();
-        [OperationContract] Task<LociPhienNt?> GetLocusById(int id);
-        [OperationContract] Task<LociPhienNt> CreateLocus(LociPhienNt locus);
-        [OperationContract] Task<bool> DeleteLocus(int id);
-    }
+        [OperationContract(Action = "http://tempuri.org/ILociPhienNtSoapService/GetLoci")]
+        LociPhienNt[] GetLoci();
 
+        [OperationContract(Action = "http://tempuri.org/ILociPhienNtSoapService/GetLocusById")]
+        LociPhienNt GetLocusById(int id);
+
+        [OperationContract(Action = "http://tempuri.org/ILociPhienNtSoapService/GetLocusByName")]
+        LociPhienNt GetLocusByName(string name);
+
+        [OperationContract(Action = "http://tempuri.org/ILociPhienNtSoapService/CreateLocus")]
+        LociPhienNt CreateLocus(LociPhienNt locus);
+
+        [OperationContract(Action = "http://tempuri.org/ILociPhienNtSoapService/UpdateLocus")]
+        LociPhienNt UpdateLocus(int id, LociPhienNt locus);
+
+        [OperationContract(Action = "http://tempuri.org/ILociPhienNtSoapService/DeleteLocus")]
+        bool DeleteLocus(int id);
+
+        [OperationContract(Action = "http://tempuri.org/ILociPhienNtSoapService/SearchLoci")]
+        LociPhienNt[] SearchLoci(string name, bool isCodis);
+
+        [OperationContract(Action = "http://tempuri.org/ILociPhienNtSoapService/GetCodisLoci")]
+        LociPhienNt[] GetCodisLoci();
+    }
 }
