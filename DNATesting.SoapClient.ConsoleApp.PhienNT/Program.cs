@@ -1,14 +1,17 @@
-﻿// File: DNATesting.SoapClient.ConsoleApp.PhienNT/Program.cs
+﻿using DNATesting.SoapClient.ConsoleApp.PhienNT.Models;
 using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace DNATesting.SoapClient.ConsoleApp.PhienNT
 {
+   
     class Program
     {
-        private static readonly string ServiceUrlHttp = "http://localhost:5202/DnaTestsPhienNtSoapService.asmx";
-        private static readonly string LociServiceUrlHttp = "http://localhost:5202/LociPhienNtSoapService.asmx";
+        private static readonly string DnaTestServiceUrl = "http://localhost:5202/DnaTestsPhienNtSoapService.asmx";
+        private static readonly string LociServiceUrl = "http://localhost:5202/LociPhienNtSoapService.asmx";
 
         static async Task Main(string[] args)
         {
@@ -26,24 +29,16 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
                 {
                     switch (choice)
                     {
-                        case "1":
-                            await TestDnaTests();
-                            break;
-                        case "2":
-                            await TestLoci();
-                            break;
-                        case "3":
-                            await TestCreateDnaTest();
-                            break;
-                        case "4":
-                            await TestCreateLocus();
-                            break;
-                        case "0":
-                            running = false;
-                            break;
-                        default:
-                            Console.WriteLine("Invalid choice. Please try again.");
-                            break;
+                        case "1": await GetAllDnaTests(); break;
+                        case "2": await GetAllLoci(); break;
+                        case "3": await CreateSampleDnaTest(); break;
+                        case "4": await CreateSampleLocus(); break;
+                        case "5": await GetDnaTestById(); break;
+                        case "6": await GetLocusById(); break;
+                        case "7": await DeleteDnaTest(); break;
+                        case "8": await DeleteLocus(); break;
+                        case "0": running = false; break;
+                        default: Console.WriteLine("Invalid choice."); break;
                     }
 
                     if (running)
@@ -62,81 +57,334 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
                 }
             }
 
-            Console.WriteLine("Thank you for using DNA Testing PhienNT SOAP Client!");
+            Console.WriteLine("Goodbye!");
         }
 
         static void DisplayMenu()
         {
-            Console.WriteLine("Choose an option:");
-            Console.WriteLine("1. Test Get All DNA Tests");
-            Console.WriteLine("2. Test Get All Loci");
-            Console.WriteLine("3. Test Create DNA Test");
-            Console.WriteLine("4. Test Create Locus");
+            Console.WriteLine("=== DNA Testing SOAP Client ===");
+            Console.WriteLine("1. Get All DNA Tests");
+            Console.WriteLine("2. Get All Loci");
+            Console.WriteLine("3. Create Sample DNA Test");
+            Console.WriteLine("4. Create Sample Locus");
+            Console.WriteLine("5. Get DNA Test by ID");
+            Console.WriteLine("6. Get Locus by ID");
+            Console.WriteLine("7. Delete DNA Test");
+            Console.WriteLine("8. Delete Locus");
             Console.WriteLine("0. Exit");
-            Console.Write("Enter your choice: ");
+            Console.Write("Choose: ");
         }
 
-        static async Task TestDnaTests()
+        // DNA Tests Operations
+        static async Task GetAllDnaTests()
         {
-            Console.WriteLine("\n--- Testing DNA Tests Service ---");
+            Console.WriteLine("\n--- Getting All DNA Tests ---");
 
-            // Note: In a real implementation, you would create proper SOAP client proxy
-            // This is just a demonstration of the service endpoints
-            Console.WriteLine($"Service URL: {ServiceUrlHttp}");
-            Console.WriteLine("Available operations:");
-            Console.WriteLine("- GetDnaTestsAsync()");
-            Console.WriteLine("- GetDnaTestByIdAsync(int id)");
-            Console.WriteLine("- CreateDnaTestAsync(DnaTestsPhienNt test)");
-            Console.WriteLine("- UpdateDnaTestAsync(int id, DnaTestsPhienNt test)");
-            Console.WriteLine("- DeleteDnaTestAsync(int id)");
-            Console.WriteLine("- SearchDnaTestsAsync(string testType, bool? isCompleted)");
+            var binding = new BasicHttpBinding();
+            var endpoint = new EndpointAddress(DnaTestServiceUrl);
+            var factory = new ChannelFactory<IDnaTestsService>(binding, endpoint);
+            var client = factory.CreateChannel();
 
-            Console.WriteLine("\nService is ready for SOAP requests!");
+            try
+            {
+                var tests = await client.GetDnaTests();
+
+                if (tests?.Count > 0)
+                {
+                    Console.WriteLine($"Found {tests.Count} DNA tests:");
+                    foreach (var test in tests)
+                    {
+                        Console.WriteLine($"  {test}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No DNA tests found.");
+                }
+            }
+            finally
+            {
+                factory.Close();
+            }
         }
 
-        static async Task TestLoci()
+        static async Task GetAllLoci()
         {
-            Console.WriteLine("\n--- Testing Loci Service ---");
+            Console.WriteLine("\n--- Getting All Loci ---");
 
-            Console.WriteLine($"Service URL: {LociServiceUrlHttp}");
-            Console.WriteLine("Available operations:");
-            Console.WriteLine("- GetLociAsync()");
-            Console.WriteLine("- GetLocusByIdAsync(int id)");
-            Console.WriteLine("- GetLocusByNameAsync(string name)");
-            Console.WriteLine("- CreateLocusAsync(LociPhienNt locus)");
-            Console.WriteLine("- UpdateLocusAsync(int id, LociPhienNt locus)");
-            Console.WriteLine("- DeleteLocusAsync(int id)");
-            Console.WriteLine("- SearchLociAsync(string name, bool? isCodis)");
-            Console.WriteLine("- GetCodisLociAsync()");
+            var binding = new BasicHttpBinding();
+            var endpoint = new EndpointAddress(LociServiceUrl);
+            var factory = new ChannelFactory<ILociService>(binding, endpoint);
+            var client = factory.CreateChannel();
 
-            Console.WriteLine("\nService is ready for SOAP requests!");
+            try
+            {
+                var loci = await client.GetLoci();
+
+                if (loci?.Count > 0)
+                {
+                    Console.WriteLine($"Found {loci.Count} loci:");
+                    foreach (var locus in loci)
+                    {
+                        Console.WriteLine($"  {locus}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No loci found.");
+                }
+            }
+            finally
+            {
+                factory.Close();
+            }
         }
 
-        static async Task TestCreateDnaTest()
+        static async Task CreateSampleDnaTest()
         {
-            Console.WriteLine("\n--- Sample DNA Test Creation ---");
-            Console.WriteLine("Sample DNA Test data:");
-            Console.WriteLine("{");
-            Console.WriteLine("  \"TestType\": \"Paternity Test\",");
-            Console.WriteLine("  \"Conclusion\": \"Sample test conclusion\",");
-            Console.WriteLine("  \"ProbabilityOfRelationship\": 99.99,");
-            Console.WriteLine("  \"RelationshipIndex\": 1000.50,");
-            Console.WriteLine("  \"IsCompleted\": false");
-            Console.WriteLine("}");
-            Console.WriteLine("\nUse SOAP client to send this data to CreateDnaTestAsync()");
+            Console.WriteLine("\n--- Creating Sample DNA Test ---");
+
+            var test = new DnaTestsPhienNt
+            {
+                TestType = "Paternity Test",
+                Conclusion = "Sample test created by console client",
+                ProbabilityOfRelationship = 99.99m,
+                RelationshipIndex = 1000.50m,
+                IsCompleted = false,
+                CreatedAt = DateTime.Now
+            };
+
+            var binding = new BasicHttpBinding();
+            var endpoint = new EndpointAddress(DnaTestServiceUrl);
+            var factory = new ChannelFactory<IDnaTestsService>(binding, endpoint);
+            var client = factory.CreateChannel();
+
+            try
+            {
+                var result = await client.CreateDnaTest(test);
+
+                if (result != null)
+                {
+                    Console.WriteLine($"Created DNA test: {result}");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to create DNA test.");
+                }
+            }
+            finally
+            {
+                factory.Close();
+            }
         }
 
-        static async Task TestCreateLocus()
+        static async Task CreateSampleLocus()
         {
-            Console.WriteLine("\n--- Sample Locus Creation ---");
-            Console.WriteLine("Sample Locus data:");
-            Console.WriteLine("{");
-            Console.WriteLine("  \"Name\": \"D3S1358\",");
-            Console.WriteLine("  \"IsCodis\": true,");
-            Console.WriteLine("  \"Description\": \"CODIS core locus\",");
-            Console.WriteLine("  \"MutationRate\": 0.0001");
-            Console.WriteLine("}");
-            Console.WriteLine("\nUse SOAP client to send this data to CreateLocusAsync()");
+            Console.WriteLine("\n--- Creating Sample Locus ---");
+
+            var locus = new LociPhienNt
+            {
+                Name = $"TEST_LOCUS_{DateTime.Now:HHmmss}",
+                IsCodis = true,
+                Description = "Sample locus created by console client",
+                MutationRate = 0.0001m,
+                CreatedAt = DateTime.Now
+            };
+
+            var binding = new BasicHttpBinding();
+            var endpoint = new EndpointAddress(LociServiceUrl);
+            var factory = new ChannelFactory<ILociService>(binding, endpoint);
+            var client = factory.CreateChannel();
+
+            try
+            {
+                var result = await client.CreateLocus(locus);
+
+                if (result != null)
+                {
+                    Console.WriteLine($"Created locus: {result}");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to create locus.");
+                }
+            }
+            finally
+            {
+                factory.Close();
+            }
+        }
+
+        static async Task GetDnaTestById()
+        {
+            Console.WriteLine("\n--- Get DNA Test by ID ---");
+            Console.Write("Enter DNA Test ID: ");
+
+            if (int.TryParse(Console.ReadLine(), out int id))
+            {
+                var binding = new BasicHttpBinding();
+                var endpoint = new EndpointAddress(DnaTestServiceUrl);
+                var factory = new ChannelFactory<IDnaTestsService>(binding, endpoint);
+                var client = factory.CreateChannel();
+
+                try
+                {
+                    var test = await client.GetDnaTestById(id);
+
+                    if (test != null)
+                    {
+                        Console.WriteLine($"Found: {test}");
+                        if (!string.IsNullOrEmpty(test.Conclusion))
+                        {
+                            Console.WriteLine($"Conclusion: {test.Conclusion}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"DNA test with ID {id} not found.");
+                    }
+                }
+                finally
+                {
+                    factory.Close();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid ID.");
+            }
+        }
+
+        static async Task GetLocusById()
+        {
+            Console.WriteLine("\n--- Get Locus by ID ---");
+            Console.Write("Enter Locus ID: ");
+
+            if (int.TryParse(Console.ReadLine(), out int id))
+            {
+                var binding = new BasicHttpBinding();
+                var endpoint = new EndpointAddress(LociServiceUrl);
+                var factory = new ChannelFactory<ILociService>(binding, endpoint);
+                var client = factory.CreateChannel();
+
+                try
+                {
+                    var locus = await client.GetLocusById(id);
+
+                    if (locus != null)
+                    {
+                        Console.WriteLine($"Found: {locus}");
+                        if (!string.IsNullOrEmpty(locus.Description))
+                        {
+                            Console.WriteLine($"Description: {locus.Description}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Locus with ID {id} not found.");
+                    }
+                }
+                finally
+                {
+                    factory.Close();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid ID.");
+            }
+        }
+
+        static async Task DeleteDnaTest()
+        {
+            Console.WriteLine("\n--- Delete DNA Test ---");
+            Console.Write("Enter DNA Test ID to delete: ");
+
+            if (int.TryParse(Console.ReadLine(), out int id))
+            {
+                Console.Write($"Are you sure you want to delete DNA test {id}? (y/n): ");
+                var confirm = Console.ReadLine()?.ToLower();
+
+                if (confirm == "y" || confirm == "yes")
+                {
+                    var binding = new BasicHttpBinding();
+                    var endpoint = new EndpointAddress(DnaTestServiceUrl);
+                    var factory = new ChannelFactory<IDnaTestsService>(binding, endpoint);
+                    var client = factory.CreateChannel();
+
+                    try
+                    {
+                        var result = await client.DeleteDnaTest(id);
+
+                        if (result)
+                        {
+                            Console.WriteLine($"DNA test {id} deleted successfully.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Failed to delete DNA test.");
+                        }
+                    }
+                    finally
+                    {
+                        factory.Close();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Delete cancelled.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid ID.");
+            }
+        }
+
+        static async Task DeleteLocus()
+        {
+            Console.WriteLine("\n--- Delete Locus ---");
+            Console.Write("Enter Locus ID to delete: ");
+
+            if (int.TryParse(Console.ReadLine(), out int id))
+            {
+                Console.Write($"Are you sure you want to delete locus {id}? (y/n): ");
+                var confirm = Console.ReadLine()?.ToLower();
+
+                if (confirm == "y" || confirm == "yes")
+                {
+                    var binding = new BasicHttpBinding();
+                    var endpoint = new EndpointAddress(LociServiceUrl);
+                    var factory = new ChannelFactory<ILociService>(binding, endpoint);
+                    var client = factory.CreateChannel();
+
+                    try
+                    {
+                        var result = await client.DeleteLocus(id);
+
+                        if (result)
+                        {
+                            Console.WriteLine($"Locus {id} deleted successfully.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Failed to delete locus.");
+                        }
+                    }
+                    finally
+                    {
+                        factory.Close();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Delete cancelled.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid ID.");
+            }
         }
     }
 }

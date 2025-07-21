@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DNATesting.SoapClient.ConsoleApp.PhienNT")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9177ac8690ae5515035bf5c2f528b1a6cbc1a9c1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+091c909330c64eeedad55815e0e766bace0dba59")]
 [assembly: System.Reflection.AssemblyProductAttribute("DNATesting.SoapClient.ConsoleApp.PhienNT")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DNATesting.SoapClient.ConsoleApp.PhienNT")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
