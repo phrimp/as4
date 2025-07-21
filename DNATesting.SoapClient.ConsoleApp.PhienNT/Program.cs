@@ -1,5 +1,6 @@
 ﻿using DNATesting.SoapClient.ConsoleApp.PhienNT.Models;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.ServiceModel;
 using System.ServiceModel.Description;
@@ -37,7 +38,7 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
 
                         // DNA Tests
                         case "1": GetAllDnaTests(); break;
-                        case "2": CreateSampleDnaTest(); break;
+                        case "2": CreateDnaTest(); break;
                         case "3": GetDnaTestById(); break;
                         case "4": UpdateDnaTest(); break;
                         case "5": DeleteDnaTest(); break;
@@ -45,7 +46,7 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
 
                         // Loci
                         case "7": GetAllLoci(); break;
-                        case "8": CreateSampleLocus(); break;
+                        case "8": CreateLocus(); break;
                         case "9": GetLocusById(); break;
                         case "10": GetLocusByName(); break;
                         case "11": UpdateLocus(); break;
@@ -84,7 +85,7 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
             Console.WriteLine();
             Console.WriteLine("DNA Tests:");
             Console.WriteLine("1. Get All DNA Tests");
-            Console.WriteLine("2. Create Sample DNA Test");
+            Console.WriteLine("2. Create New DNA Test");
             Console.WriteLine("3. Get DNA Test by ID");
             Console.WriteLine("4. Update DNA Test");
             Console.WriteLine("5. Delete DNA Test");
@@ -92,7 +93,7 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
             Console.WriteLine();
             Console.WriteLine("Loci:");
             Console.WriteLine("7. Get All Loci");
-            Console.WriteLine("8. Create Sample Locus");
+            Console.WriteLine("8. Create New Locus");
             Console.WriteLine("9. Get Locus by ID");
             Console.WriteLine("10. Get Locus by Name");
             Console.WriteLine("11. Update Locus");
@@ -254,41 +255,119 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
             }
         }
 
-        static void CreateSampleDnaTest()
+        static void CreateDnaTest()
         {
-            Console.WriteLine("\n--- Creating Sample DNA Test ---");
+            Console.WriteLine("\n--- Create New DNA Test ---");
 
-            var test = new DnaTestsPhienNt
+            var test = new DnaTestsPhienNt();
+
+            // Get Test Type
+            Console.Write("Enter Test Type (e.g., Paternity, Maternity, Sibling, Grandparent): ");
+            test.TestType = Console.ReadLine();
+
+            // Get Conclusion
+            Console.Write("Enter Conclusion (optional, press Enter to skip): ");
+            var conclusion = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(conclusion))
+                test.Conclusion = conclusion;
+
+            // Get Probability of Relationship
+            Console.Write("Enter Probability of Relationship (0-100, or press Enter to skip): ");
+            var probInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(probInput) && decimal.TryParse(probInput, out decimal probability))
             {
-                TestType = "Paternity Test",
-                Conclusion = "Sample test created by console client",
-                ProbabilityOfRelationship = 99.99m,
-                RelationshipIndex = 1000.50m,
-                IsCompleted = false,
-                CreatedAt = DateTime.Now
-            };
+                test.ProbabilityOfRelationship = probability;
+            }
+
+            // Get Relationship Index
+            Console.Write("Enter Relationship Index (decimal value, or press Enter to skip): ");
+            var indexInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(indexInput) && decimal.TryParse(indexInput, out decimal relationshipIndex))
+            {
+                test.RelationshipIndex = relationshipIndex;
+            }
+
+            // Get Completion Status
+            Console.Write("Is test completed? (y/n, default: n): ");
+            var completedInput = Console.ReadLine()?.ToLower();
+            test.IsCompleted = completedInput == "y" || completedInput == "yes";
+
+            // Set creation time
+            test.CreatedAt = DateTime.Now;
+
+            // Display what will be created
+            Console.WriteLine("\nCreating DNA Test with the following details:");
+            Console.WriteLine($"  Test Type: {test.TestType ?? "N/A"}");
+            Console.WriteLine($"  Conclusion: {test.Conclusion ?? "N/A"}");
+            Console.WriteLine($"  Probability: {test.ProbabilityOfRelationship?.ToString("F2") ?? "N/A"}%");
+            Console.WriteLine($"  Relationship Index: {test.RelationshipIndex?.ToString("F2") ?? "N/A"}");
+            Console.WriteLine($"  Completed: {test.IsCompleted}");
+            Console.WriteLine($"  Created At: {test.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+
+            Console.Write("\nProceed with creation? (y/n): ");
+            var confirm = Console.ReadLine()?.ToLower();
+            if (confirm != "y" && confirm != "yes")
+            {
+                Console.WriteLine("Creation cancelled.");
+                return;
+            }
 
             var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = 1000000;
+            binding.ReaderQuotas.MaxArrayLength = 1000000;
+            binding.ReaderQuotas.MaxStringContentLength = 1000000;
+
             var endpoint = new EndpointAddress(DnaTestServiceUrl);
             var factory = new ChannelFactory<IDnaTestsPhienNtSoapService>(binding, endpoint);
             var client = factory.CreateChannel();
 
             try
             {
+                Console.WriteLine("Sending request to server...");
                 var result = client.CreateDnaTest(test);
 
                 if (result != null)
                 {
-                    Console.WriteLine($"Created DNA test: {result}");
+                    Console.WriteLine($"\n✅ Successfully created DNA test: {result}");
+                    if (!string.IsNullOrEmpty(result.Conclusion))
+                    {
+                        Console.WriteLine($"   Conclusion: {result.Conclusion}");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Failed to create DNA test.");
+                    Console.WriteLine("❌ Failed to create DNA test - server returned null.");
                 }
+            }
+            catch (System.ServiceModel.FaultException<System.ServiceModel.ExceptionDetail> ex)
+            {
+                Console.WriteLine($"❌ SOAP Fault: {ex.Detail?.Message ?? ex.Message}");
+            }
+            catch (System.ServiceModel.FaultException ex)
+            {
+                Console.WriteLine($"❌ SOAP Fault: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
             }
             finally
             {
-                factory.Close();
+                try
+                {
+                    if (client is System.ServiceModel.ICommunicationObject commObj)
+                    {
+                        if (commObj.State == System.ServiceModel.CommunicationState.Faulted)
+                            commObj.Abort();
+                        else
+                            commObj.Close();
+                    }
+                    factory.Close();
+                }
+                catch
+                {
+                    factory.Abort();
+                }
             }
         }
 
@@ -337,42 +416,137 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
             Console.WriteLine("\n--- Update DNA Test ---");
             Console.Write("Enter DNA Test ID to update: ");
 
-            if (int.TryParse(Console.ReadLine(), out int id))
+            if (!int.TryParse(Console.ReadLine(), out int id))
             {
-                var binding = new BasicHttpBinding();
-                var endpoint = new EndpointAddress(DnaTestServiceUrl);
-                var factory = new ChannelFactory<IDnaTestsPhienNtSoapService>(binding, endpoint);
-                var client = factory.CreateChannel();
+                Console.WriteLine("❌ Invalid ID format.");
+                return;
+            }
 
-                try
+            var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = 1000000;
+            binding.ReaderQuotas.MaxArrayLength = 1000000;
+            binding.ReaderQuotas.MaxStringContentLength = 1000000;
+
+            var endpoint = new EndpointAddress(DnaTestServiceUrl);
+            var factory = new ChannelFactory<IDnaTestsPhienNtSoapService>(binding, endpoint);
+            var client = factory.CreateChannel();
+
+            try
+            {
+                // First get the existing test
+                Console.WriteLine("Fetching existing DNA test...");
+                var existingTest = client.GetDnaTestById(id);
+                if (existingTest == null)
                 {
-                    var existingTest = client.GetDnaTestById(id);
-                    if (existingTest == null)
-                    {
-                        Console.WriteLine($"DNA test with ID {id} not found.");
-                        return;
-                    }
-
-                    Console.WriteLine($"Current test: {existingTest}");
-                    Console.Write("Enter new conclusion (or press Enter to keep current): ");
-                    var newConclusion = Console.ReadLine();
-
-                    if (!string.IsNullOrEmpty(newConclusion))
-                    {
-                        existingTest.Conclusion = newConclusion;
-                    }
-
-                    var result = client.UpdateDnaTest(id, existingTest);
-                    Console.WriteLine($"Updated DNA test: {result}");
+                    Console.WriteLine($"❌ DNA test with ID {id} not found.");
+                    return;
                 }
-                finally
+
+                Console.WriteLine($"\nCurrent DNA Test Details:");
+                Console.WriteLine($"  ID: {existingTest.PhienNtid}");
+                Console.WriteLine($"  Test Type: {existingTest.TestType ?? "N/A"}");
+                Console.WriteLine($"  Conclusion: {existingTest.Conclusion ?? "N/A"}");
+                Console.WriteLine($"  Probability: {existingTest.ProbabilityOfRelationship?.ToString("F2") ?? "N/A"}%");
+                Console.WriteLine($"  Relationship Index: {existingTest.RelationshipIndex?.ToString("F2") ?? "N/A"}");
+                Console.WriteLine($"  Completed: {existingTest.IsCompleted?.ToString() ?? "N/A"}");
+                Console.WriteLine($"  Created: {existingTest.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A"}");
+
+                Console.WriteLine("\n--- Update Fields (press Enter to keep current value) ---");
+
+                // Update Test Type
+                Console.Write($"Test Type [{existingTest.TestType ?? "N/A"}]: ");
+                var newTestType = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newTestType))
+                    existingTest.TestType = newTestType;
+
+                // Update Conclusion
+                Console.Write($"Conclusion [{existingTest.Conclusion ?? "N/A"}]: ");
+                var newConclusion = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newConclusion))
+                    existingTest.Conclusion = newConclusion;
+
+                // Update Probability
+                Console.Write($"Probability of Relationship [{existingTest.ProbabilityOfRelationship?.ToString("F2") ?? "N/A"}]: ");
+                var probInput = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(probInput) && decimal.TryParse(probInput, out decimal probability))
                 {
-                    factory.Close();
+                    existingTest.ProbabilityOfRelationship = probability;
+                }
+
+                // Update Relationship Index
+                Console.Write($"Relationship Index [{existingTest.RelationshipIndex?.ToString("F2") ?? "N/A"}]: ");
+                var indexInput = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(indexInput) && decimal.TryParse(indexInput, out decimal relationshipIndex))
+                {
+                    existingTest.RelationshipIndex = relationshipIndex;
+                }
+
+                // Update Completion Status
+                Console.Write($"Is completed? (y/n) [{(existingTest.IsCompleted == true ? "y" : "n")}]: ");
+                var completedInput = Console.ReadLine()?.ToLower();
+                if (!string.IsNullOrWhiteSpace(completedInput))
+                {
+                    existingTest.IsCompleted = completedInput == "y" || completedInput == "yes";
+                }
+
+                // Show preview of changes
+                Console.WriteLine("\n--- Updated DNA Test Preview ---");
+                Console.WriteLine($"  ID: {existingTest.PhienNtid}");
+                Console.WriteLine($"  Test Type: {existingTest.TestType ?? "N/A"}");
+                Console.WriteLine($"  Conclusion: {existingTest.Conclusion ?? "N/A"}");
+                Console.WriteLine($"  Probability: {existingTest.ProbabilityOfRelationship?.ToString("F2") ?? "N/A"}%");
+                Console.WriteLine($"  Relationship Index: {existingTest.RelationshipIndex?.ToString("F2") ?? "N/A"}");
+                Console.WriteLine($"  Completed: {existingTest.IsCompleted?.ToString() ?? "N/A"}");
+
+                Console.Write("\nSave these changes? (y/n): ");
+                var confirm = Console.ReadLine()?.ToLower();
+                if (confirm != "y" && confirm != "yes")
+                {
+                    Console.WriteLine("Update cancelled.");
+                    return;
+                }
+
+                Console.WriteLine("Sending update to server...");
+                var result = client.UpdateDnaTest(id, existingTest);
+
+                if (result != null)
+                {
+                    Console.WriteLine($"\n✅ Successfully updated DNA test: {result}");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Failed to update DNA test - server returned null.");
                 }
             }
-            else
+            catch (System.ServiceModel.FaultException<System.ServiceModel.ExceptionDetail> ex)
             {
-                Console.WriteLine("Invalid ID.");
+                Console.WriteLine($"❌ SOAP Fault: {ex.Detail?.Message ?? ex.Message}");
+            }
+            catch (System.ServiceModel.FaultException ex)
+            {
+                Console.WriteLine($"❌ SOAP Fault: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
+            }
+            finally
+            {
+                try
+                {
+                    if (client is System.ServiceModel.ICommunicationObject commObj)
+                    {
+                        if (commObj.State == System.ServiceModel.CommunicationState.Faulted)
+                            commObj.Abort();
+                        else
+                            commObj.Close();
+                    }
+                    factory.Close();
+                }
+                catch
+                {
+                    factory.Abort();
+                }
             }
         }
 
@@ -425,38 +599,119 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
         static void SearchDnaTests()
         {
             Console.WriteLine("\n--- Search DNA Tests ---");
-            Console.Write("Enter test type (or press Enter for all): ");
+
+            Console.Write("Enter test type to search for (or press Enter for all types): ");
             var testType = Console.ReadLine();
 
-            Console.Write("Search for completed tests only? (y/n): ");
-            var completedInput = Console.ReadLine()?.ToLower();
-            bool isCompleted = completedInput == "y" || completedInput == "yes";
+            Console.WriteLine("Filter by completion status:");
+            Console.WriteLine("1. All tests (completed and incomplete)");
+            Console.WriteLine("2. Only completed tests");
+            Console.WriteLine("3. Only incomplete tests");
+            Console.Write("Choose (1-3, default: 1): ");
+
+            var statusChoice = Console.ReadLine();
+            bool? completionFilter = null;
+            bool isCompleted = false;
+
+            switch (statusChoice)
+            {
+                case "2":
+                    completionFilter = true;
+                    isCompleted = true;
+                    break;
+                case "3":
+                    completionFilter = false;
+                    isCompleted = false;
+                    break;
+                default:
+                    Console.WriteLine("Searching all tests regardless of completion status...");
+                    // For the SOAP service, we need to pick one value, so we'll do two searches
+                    break;
+            }
 
             var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = 1000000;
+            binding.ReaderQuotas.MaxArrayLength = 1000000;
+            binding.ReaderQuotas.MaxStringContentLength = 1000000;
+
             var endpoint = new EndpointAddress(DnaTestServiceUrl);
             var factory = new ChannelFactory<IDnaTestsPhienNtSoapService>(binding, endpoint);
             var client = factory.CreateChannel();
 
             try
             {
-                var tests = client.SearchDnaTests(testType ?? "", isCompleted);
+                Console.WriteLine("Searching...");
 
-                if (tests != null && tests.Length > 0)
+                List<DnaTestsPhienNt> allResults = new List<DnaTestsPhienNt>();
+
+                if (completionFilter.HasValue)
                 {
-                    Console.WriteLine($"Found {tests.Length} matching DNA tests:");
-                    foreach (var test in tests)
+                    // Single search with specific completion status
+                    var tests = client.SearchDnaTests(testType ?? "", isCompleted);
+                    if (tests != null)
+                        allResults.AddRange(tests);
+                }
+                else
+                {
+                    // Search both completed and incomplete, then combine
+                    var completedTests = client.SearchDnaTests(testType ?? "", true);
+                    var incompleteTests = client.SearchDnaTests(testType ?? "", false);
+
+                    if (completedTests != null)
+                        allResults.AddRange(completedTests);
+                    if (incompleteTests != null)
+                        allResults.AddRange(incompleteTests);
+                }
+
+                if (allResults.Count > 0)
+                {
+                    Console.WriteLine($"\n✅ Found {allResults.Count} matching DNA tests:");
+                    Console.WriteLine("".PadRight(80, '='));
+
+                    foreach (var test in allResults)
                     {
-                        Console.WriteLine($"  {test}");
+                        Console.WriteLine($"🧬 {test}");
+                        if (!string.IsNullOrEmpty(test.Conclusion))
+                        {
+                            Console.WriteLine($"   Conclusion: {test.Conclusion}");
+                        }
+                        if (test.CreatedAt.HasValue)
+                        {
+                            Console.WriteLine($"   Created: {test.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+                        }
+                        Console.WriteLine("".PadRight(80, '-'));
                     }
                 }
                 else
                 {
-                    Console.WriteLine("No matching DNA tests found.");
+                    Console.WriteLine("❌ No matching DNA tests found.");
+                    Console.WriteLine("Try:");
+                    Console.WriteLine("- Different test type (Paternity, Maternity, Sibling, etc.)");
+                    Console.WriteLine("- Different completion status filter");
+                    Console.WriteLine("- Leave test type empty to search all types");
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Search failed: {ex.Message}");
             }
             finally
             {
-                factory.Close();
+                try
+                {
+                    if (client is System.ServiceModel.ICommunicationObject commObj)
+                    {
+                        if (commObj.State == System.ServiceModel.CommunicationState.Faulted)
+                            commObj.Abort();
+                        else
+                            commObj.Close();
+                    }
+                    factory.Close();
+                }
+                catch
+                {
+                    factory.Abort();
+                }
             }
         }
 
@@ -555,40 +810,116 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
             }
         }
 
-        static void CreateSampleLocus()
+        static void CreateLocus()
         {
-            Console.WriteLine("\n--- Creating Sample Locus ---");
+            Console.WriteLine("\n--- Create New Locus ---");
 
-            var locus = new LociPhienNt
+            var locus = new LociPhienNt();
+
+            // Get Locus Name
+            Console.Write("Enter Locus Name (required): ");
+            locus.Name = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(locus.Name))
             {
-                Name = $"TEST_LOCUS_{DateTime.Now:HHmmss}",
-                IsCodis = true,
-                Description = "Sample locus created by console client",
-                MutationRate = 0.0001m,
-                CreatedAt = DateTime.Now
-            };
+                Console.WriteLine("❌ Locus name is required. Creation cancelled.");
+                return;
+            }
+
+            // Get CODIS status
+            Console.Write("Is this a CODIS locus? (y/n, default: n): ");
+            var codisInput = Console.ReadLine()?.ToLower();
+            locus.IsCodis = codisInput == "y" || codisInput == "yes";
+
+            // Get Description
+            Console.Write("Enter Description (optional, press Enter to skip): ");
+            var description = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(description))
+                locus.Description = description;
+
+            // Get Mutation Rate
+            Console.Write("Enter Mutation Rate (decimal value like 0.0001, or press Enter to skip): ");
+            var rateInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(rateInput) && decimal.TryParse(rateInput, out decimal mutationRate))
+            {
+                locus.MutationRate = mutationRate;
+            }
+
+            // Set creation time
+            locus.CreatedAt = DateTime.Now;
+
+            // Display what will be created
+            Console.WriteLine("\nCreating Locus with the following details:");
+            Console.WriteLine($"  Name: {locus.Name}");
+            Console.WriteLine($"  CODIS: {locus.IsCodis}");
+            Console.WriteLine($"  Description: {locus.Description ?? "N/A"}");
+            Console.WriteLine($"  Mutation Rate: {locus.MutationRate?.ToString("F6") ?? "N/A"}");
+            Console.WriteLine($"  Created At: {locus.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+
+            Console.Write("\nProceed with creation? (y/n): ");
+            var confirm = Console.ReadLine()?.ToLower();
+            if (confirm != "y" && confirm != "yes")
+            {
+                Console.WriteLine("Creation cancelled.");
+                return;
+            }
 
             var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = 1000000;
+            binding.ReaderQuotas.MaxArrayLength = 1000000;
+            binding.ReaderQuotas.MaxStringContentLength = 1000000;
+
             var endpoint = new EndpointAddress(LociServiceUrl);
             var factory = new ChannelFactory<ILociPhienNtSoapService>(binding, endpoint);
             var client = factory.CreateChannel();
 
             try
             {
+                Console.WriteLine("Sending request to server...");
                 var result = client.CreateLocus(locus);
 
                 if (result != null)
                 {
-                    Console.WriteLine($"Created locus: {result}");
+                    Console.WriteLine($"\n✅ Successfully created locus: {result}");
+                    if (!string.IsNullOrEmpty(result.Description))
+                    {
+                        Console.WriteLine($"   Description: {result.Description}");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Failed to create locus.");
+                    Console.WriteLine("❌ Failed to create locus - server returned null.");
                 }
+            }
+            catch (System.ServiceModel.FaultException<System.ServiceModel.ExceptionDetail> ex)
+            {
+                Console.WriteLine($"❌ SOAP Fault: {ex.Detail?.Message ?? ex.Message}");
+            }
+            catch (System.ServiceModel.FaultException ex)
+            {
+                Console.WriteLine($"❌ SOAP Fault: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
             }
             finally
             {
-                factory.Close();
+                try
+                {
+                    if (client is System.ServiceModel.ICommunicationObject commObj)
+                    {
+                        if (commObj.State == System.ServiceModel.CommunicationState.Faulted)
+                            commObj.Abort();
+                        else
+                            commObj.Close();
+                    }
+                    factory.Close();
+                }
+                catch
+                {
+                    factory.Abort();
+                }
             }
         }
 
@@ -678,42 +1009,127 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
             Console.WriteLine("\n--- Update Locus ---");
             Console.Write("Enter Locus ID to update: ");
 
-            if (int.TryParse(Console.ReadLine(), out int id))
+            if (!int.TryParse(Console.ReadLine(), out int id))
             {
-                var binding = new BasicHttpBinding();
-                var endpoint = new EndpointAddress(LociServiceUrl);
-                var factory = new ChannelFactory<ILociPhienNtSoapService>(binding, endpoint);
-                var client = factory.CreateChannel();
+                Console.WriteLine("❌ Invalid ID format.");
+                return;
+            }
 
-                try
+            var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = 1000000;
+            binding.ReaderQuotas.MaxArrayLength = 1000000;
+            binding.ReaderQuotas.MaxStringContentLength = 1000000;
+
+            var endpoint = new EndpointAddress(LociServiceUrl);
+            var factory = new ChannelFactory<ILociPhienNtSoapService>(binding, endpoint);
+            var client = factory.CreateChannel();
+
+            try
+            {
+                // First get the existing locus
+                Console.WriteLine("Fetching existing locus...");
+                var existingLocus = client.GetLocusById(id);
+                if (existingLocus == null)
                 {
-                    var existingLocus = client.GetLocusById(id);
-                    if (existingLocus == null)
-                    {
-                        Console.WriteLine($"Locus with ID {id} not found.");
-                        return;
-                    }
-
-                    Console.WriteLine($"Current locus: {existingLocus}");
-                    Console.Write("Enter new description (or press Enter to keep current): ");
-                    var newDescription = Console.ReadLine();
-
-                    if (!string.IsNullOrEmpty(newDescription))
-                    {
-                        existingLocus.Description = newDescription;
-                    }
-
-                    var result = client.UpdateLocus(id, existingLocus);
-                    Console.WriteLine($"Updated locus: {result}");
+                    Console.WriteLine($"❌ Locus with ID {id} not found.");
+                    return;
                 }
-                finally
+
+                Console.WriteLine($"\nCurrent Locus Details:");
+                Console.WriteLine($"  ID: {existingLocus.PhienNtid}");
+                Console.WriteLine($"  Name: {existingLocus.Name ?? "N/A"}");
+                Console.WriteLine($"  CODIS: {existingLocus.IsCodis?.ToString() ?? "N/A"}");
+                Console.WriteLine($"  Description: {existingLocus.Description ?? "N/A"}");
+                Console.WriteLine($"  Mutation Rate: {existingLocus.MutationRate?.ToString("F6") ?? "N/A"}");
+                Console.WriteLine($"  Created: {existingLocus.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A"}");
+
+                Console.WriteLine("\n--- Update Fields (press Enter to keep current value) ---");
+
+                // Update Name
+                Console.Write($"Name [{existingLocus.Name ?? "N/A"}]: ");
+                var newName = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newName))
+                    existingLocus.Name = newName;
+
+                // Update CODIS status
+                Console.Write($"Is CODIS? (y/n) [{(existingLocus.IsCodis == true ? "y" : "n")}]: ");
+                var codisInput = Console.ReadLine()?.ToLower();
+                if (!string.IsNullOrWhiteSpace(codisInput))
                 {
-                    factory.Close();
+                    existingLocus.IsCodis = codisInput == "y" || codisInput == "yes";
+                }
+
+                // Update Description
+                Console.Write($"Description [{existingLocus.Description ?? "N/A"}]: ");
+                var newDescription = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newDescription))
+                    existingLocus.Description = newDescription;
+
+                // Update Mutation Rate
+                Console.Write($"Mutation Rate [{existingLocus.MutationRate?.ToString("F6") ?? "N/A"}]: ");
+                var rateInput = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(rateInput) && decimal.TryParse(rateInput, out decimal mutationRate))
+                {
+                    existingLocus.MutationRate = mutationRate;
+                }
+
+                // Show preview of changes
+                Console.WriteLine("\n--- Updated Locus Preview ---");
+                Console.WriteLine($"  ID: {existingLocus.PhienNtid}");
+                Console.WriteLine($"  Name: {existingLocus.Name ?? "N/A"}");
+                Console.WriteLine($"  CODIS: {existingLocus.IsCodis?.ToString() ?? "N/A"}");
+                Console.WriteLine($"  Description: {existingLocus.Description ?? "N/A"}");
+                Console.WriteLine($"  Mutation Rate: {existingLocus.MutationRate?.ToString("F6") ?? "N/A"}");
+
+                Console.Write("\nSave these changes? (y/n): ");
+                var confirm = Console.ReadLine()?.ToLower();
+                if (confirm != "y" && confirm != "yes")
+                {
+                    Console.WriteLine("Update cancelled.");
+                    return;
+                }
+
+                Console.WriteLine("Sending update to server...");
+                var result = client.UpdateLocus(id, existingLocus);
+
+                if (result != null)
+                {
+                    Console.WriteLine($"\n✅ Successfully updated locus: {result}");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Failed to update locus - server returned null.");
                 }
             }
-            else
+            catch (System.ServiceModel.FaultException<System.ServiceModel.ExceptionDetail> ex)
             {
-                Console.WriteLine("Invalid ID.");
+                Console.WriteLine($"❌ SOAP Fault: {ex.Detail?.Message ?? ex.Message}");
+            }
+            catch (System.ServiceModel.FaultException ex)
+            {
+                Console.WriteLine($"❌ SOAP Fault: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
+            }
+            finally
+            {
+                try
+                {
+                    if (client is System.ServiceModel.ICommunicationObject commObj)
+                    {
+                        if (commObj.State == System.ServiceModel.CommunicationState.Faulted)
+                            commObj.Abort();
+                        else
+                            commObj.Close();
+                    }
+                    factory.Close();
+                }
+                catch
+                {
+                    factory.Abort();
+                }
             }
         }
 
@@ -766,38 +1182,118 @@ namespace DNATesting.SoapClient.ConsoleApp.PhienNT
         static void SearchLoci()
         {
             Console.WriteLine("\n--- Search Loci ---");
-            Console.Write("Enter locus name (or press Enter for all): ");
+
+            Console.Write("Enter locus name to search for (or press Enter for all names): ");
             var name = Console.ReadLine();
 
-            Console.Write("Search for CODIS loci only? (y/n): ");
-            var codisInput = Console.ReadLine()?.ToLower();
-            bool isCodis = codisInput == "y" || codisInput == "yes";
+            Console.WriteLine("Filter by CODIS status:");
+            Console.WriteLine("1. All loci (CODIS and non-CODIS)");
+            Console.WriteLine("2. Only CODIS loci");
+            Console.WriteLine("3. Only non-CODIS loci");
+            Console.Write("Choose (1-3, default: 1): ");
+
+            var codisChoice = Console.ReadLine();
+            bool? codisFilter = null;
+            bool isCodis = false;
+
+            switch (codisChoice)
+            {
+                case "2":
+                    codisFilter = true;
+                    isCodis = true;
+                    break;
+                case "3":
+                    codisFilter = false;
+                    isCodis = false;
+                    break;
+                default:
+                    Console.WriteLine("Searching all loci regardless of CODIS status...");
+                    break;
+            }
 
             var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = 1000000;
+            binding.ReaderQuotas.MaxArrayLength = 1000000;
+            binding.ReaderQuotas.MaxStringContentLength = 1000000;
+
             var endpoint = new EndpointAddress(LociServiceUrl);
             var factory = new ChannelFactory<ILociPhienNtSoapService>(binding, endpoint);
             var client = factory.CreateChannel();
 
             try
             {
-                var loci = client.SearchLoci(name ?? "", isCodis);
+                Console.WriteLine("Searching...");
 
-                if (loci != null && loci.Length > 0)
+                List<LociPhienNt> allResults = new List<LociPhienNt>();
+
+                if (codisFilter.HasValue)
                 {
-                    Console.WriteLine($"Found {loci.Length} matching loci:");
-                    foreach (var locus in loci)
+                    // Single search with specific CODIS status
+                    var loci = client.SearchLoci(name ?? "", isCodis);
+                    if (loci != null)
+                        allResults.AddRange(loci);
+                }
+                else
+                {
+                    // Search both CODIS and non-CODIS, then combine
+                    var codisLoci = client.SearchLoci(name ?? "", true);
+                    var nonCodisLoci = client.SearchLoci(name ?? "", false);
+
+                    if (codisLoci != null)
+                        allResults.AddRange(codisLoci);
+                    if (nonCodisLoci != null)
+                        allResults.AddRange(nonCodisLoci);
+                }
+
+                if (allResults.Count > 0)
+                {
+                    Console.WriteLine($"\n✅ Found {allResults.Count} matching loci:");
+                    Console.WriteLine("".PadRight(80, '='));
+
+                    foreach (var locus in allResults)
                     {
-                        Console.WriteLine($"  {locus}");
+                        Console.WriteLine($"🧬 {locus}");
+                        if (!string.IsNullOrEmpty(locus.Description))
+                        {
+                            Console.WriteLine($"   Description: {locus.Description}");
+                        }
+                        if (locus.CreatedAt.HasValue)
+                        {
+                            Console.WriteLine($"   Created: {locus.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+                        }
+                        Console.WriteLine("".PadRight(80, '-'));
                     }
                 }
                 else
                 {
-                    Console.WriteLine("No matching loci found.");
+                    Console.WriteLine("❌ No matching loci found.");
+                    Console.WriteLine("Try:");
+                    Console.WriteLine("- Different locus name pattern");
+                    Console.WriteLine("- Different CODIS status filter");
+                    Console.WriteLine("- Leave name empty to search all loci");
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Search failed: {ex.Message}");
             }
             finally
             {
-                factory.Close();
+                try
+                {
+                    if (client is System.ServiceModel.ICommunicationObject commObj)
+                    {
+                        if (commObj.State == System.ServiceModel.CommunicationState.Faulted)
+                            commObj.Abort();
+                        else
+                            commObj.Close();
+                    }
+                    factory.Close();
+                }
+                catch
+                {
+                    factory.Abort();
+                }
             }
         }
 
